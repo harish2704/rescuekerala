@@ -185,3 +185,4 @@ STATICFILES_DIRS = (
 )
 
 ADMIN_SITE_HEADER = "Keralarescue Dashboard"
+G_MAPS_API_KEY = env('G_MAPS_API_KEY')

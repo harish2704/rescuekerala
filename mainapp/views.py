@@ -7,6 +7,8 @@ import django_filters
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.http import JsonResponse
 from django.http import HttpResponseRedirect
+from django.core import serializers
+from django.conf import settings
 
 class CreateRequest(CreateView):
     model = Request
@@ -109,6 +111,10 @@ def request_list(request):
     paginator = Paginator(req_data, 100)
     page = request.GET.get('page')
     req_data = paginator.get_page(page)
+    if request.GET.get('view') == 'map':
+        req_data = { 'items': serializers.serialize("json", req_data) }
+        req_data['G_MAPS_API_KEY'] = settings.G_MAPS_API_KEY
+        return render(request, 'mainapp/request_map.html', {'filter': filter , "data" : req_data })
     return render(request, 'mainapp/request_list.html', {'filter': filter , "data" : req_data })
 
 

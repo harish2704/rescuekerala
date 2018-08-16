@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% load bootstrap3 %}
+
+{% block content %}
+
+<form action="" method="get" class="text-center">
+       {{ filter.form.as_p }}
+       <input value="View requests" class="btn btn-primary" type="submit" />
+       <button class="btn btn-primary" type="submit" name="view" value="map" >View Map</button>
+</form>
+<div class="row">
+  <div class="col-12">
+    <div id="map" style="height: 500px;" >
+    </div>
+  </div>
+</div>
+
+<script>
+{% autoescape off %}
+var reqData = {{ data.items }};
+window.reqData = reqData;
+{% endautoescape %}
+function reqToPosition( req ){
+  var latlng = req.fields.latlng;
+  if( !latlng ){
+    return;
+  }
+  latlng = latlng.split(',').map( parseFloat );
+  var position = {
+    lat: latlng[0],
+    lng: latlng[1]
+  };
+  var label = '#' + req.pk ;
+  var content = '<b>Location: </b>' + req.fields.location +
+    '<br/><b>Requestee: </b>' + req.fields.requestee +
+    '<br/><b>Requested At: </b>' + new Date( req.fields.dateadded  ).toLocaleString() +
+    '<br/><b>Phone: </b>' + req.fields.requestee_phone;
+
+  return {
+    position: position,
+    label: label,
+    content: content,
+  };
+}
+
+function initMap() {
+  var myLatLng = {lat: 10.523856, lng: 76.213900 };
+
+  var map = new google.maps.Map(document.getElementById('map'), {
+    zoom: 12,
+    center: myLatLng
+  });
+
+  reqData.map( reqToPosition ).forEach( function( data ){
+    if( !data ){
+      return;
+    }
+    var image = 'https://developers.google.com/maps/documentation/javascript/examples/full/images/beachflag.png';
+    var marker = new google.maps.Marker({
+      position: data.position,
+      map: map,
+      label: data.label,
+      // icon: image,
+    });
+    var infowindow = new google.maps.InfoWindow({
+      content: data.content
+    });
+
+    marker.addListener('click', function() {
+      infowindow.open(map, marker);
+    });
+
+  });
+}
+</script>
+
+<script async defer src="https://maps.googleapis.com/maps/api/js?key={{ data.G_MAPS_API_KEY }}&callback=initMap"> </script>
+{% endblock %}
